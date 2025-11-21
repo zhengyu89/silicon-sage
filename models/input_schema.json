@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Silicon Sage Build Request",
+  "description": "Input payload for the Desktop PC Builder Multi-Agent System. Defines budget, usage requirements, and aesthetic preferences for internal components (excluding case).",
+  "type": "object",
+  "required": [
+    "financials",
+    "build_requirements",
+    "component_preferences"
+  ],
+  "properties": {
+    "financials": {
+      "type": "object",
+      "description": "Budgetary constraints for the build.",
+      "required": ["budget_cap", "currency"],
+      "properties": {
+        "budget_cap": {
+          "type": "number",
+          "minimum": 1000,
+          "description": "The total maximum amount to spend on core components (CPU, GPU, Mobo, RAM, SSD, PSU). Excludes Case/Chassis cost."
+        },
+        "currency": {
+          "type": "string",
+          "default": "MYR",
+          "description": "Three-letter currency code (e.g., MYR, USD)."
+        },
+        "flexibility": {
+          "type": "string",
+          "enum": ["strict", "flexible"],
+          "default": "strict",
+          "description": "'strict' means the budget_cap is a hard limit. 'flexible' allows the agent to exceed by ~10% if significant performance gains are found."
+        }
+      }
+    },
+    "build_requirements": {
+      "type": "object",
+      "description": "Technical performance targets based on user activity.",
+      "required": ["primary_use", "form_factor_target"],
+      "properties": {
+        "primary_use": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "List of primary activities (e.g., 'Gaming', 'Video Editing', '3D Rendering'). Used to prioritize CPU vs GPU."
+        },
+        "target_resolution": {
+          "type": "string",
+          "enum": ["1080p", "1440p", "4k", "Unknown"],
+          "default": "Unknown",
+          "description": "The monitor resolution the user intends to use. Defaults to 'Unknown' if not specified."
+        },
+        "form_factor_target": {
+          "type": "string",
+          "enum": ["ATX", "mATX", "ITX"],
+          "default": "ATX",
+          "description": "The target motherboard size. Defaults to ATX for standard builds since case selection is excluded."
+        }
+      }
+    },
+    "component_preferences": {
+      "type": "object",
+      "description": "Visual and brand preferences for internal parts.",
+      "properties": {
+        "lighting_style": {
+          "type": "string",
+          "enum": ["No RGB", "Minimal", "Full RGB"],
+          "description": "Preference for LED lighting on components like RAM, Fans, and GPU."
+        },
+        "color_theme": {
+          "type": "string",
+          "enum": ["Black", "White", "Black/Red", "Pastel", "No Preference"],
+          "description": "The physical color of the component shrouds/heatsinks."
+        },
+        "cpu_preferred_platform": {
+          "type": "string",
+          "enum": ["Any", "Intel", "AMD"],
+          "default": "Any",
+          "description": "Brand loyalty for the CPU platform."
+        }
+      }
+    },
+    "user_prompt": {
+      "type": "string",
+      "description": "Raw natural language input from the user to capture edge cases, specific game titles (e.g. 'GTA 6'), or specific port requirements (e.g. 'need thunderbolt')."
+    }
+  }
+}
