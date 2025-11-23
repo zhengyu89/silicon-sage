@@ -43,7 +43,7 @@ class ComponentGPU(ComponentBase):
 # -------------------------
 
 class Motherboard_Specs(BaseModel):
-    form_factor: Optional[Literal["ATX", "mATX", "ITX"]] = None
+    form_factor: Optional[str] = None
     socket: Optional[str] = None
     rear_io_ports: Optional[List[str]] = None
     internal_headers: Optional[List[str]] = None
@@ -59,7 +59,7 @@ class ComponentMotherboard(ComponentBase):
 class PSU_Specs(BaseModel):
     wattage: Optional[int] = None
     rating: Optional[str] = None
-    modular: Optional[Literal["Full", "Semi", "Non"]] = None
+    modular: Optional[str] = None
 
 class ComponentPSU(ComponentBase):
     specs: PSU_Specs

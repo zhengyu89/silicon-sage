@@ -9,7 +9,7 @@ class Financials(BaseModel):
 
 class BuildRequirements(BaseModel):
     primary_use: List[str]
-    target_resolution: Optional[str] = "Unknown"  # e.g., "1080p", "4K"
+    target_resolution: Optional[str] = "Any"  # e.g., "1080p", "4K"
     form_factor_target: Optional[str] = "ATX"     # e.g., "ATX", "Micro-ATX", "Mini-ITX"
 
 

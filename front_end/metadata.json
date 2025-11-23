@@ -1,0 +1,5 @@
+{
+  "name": "Silicon Sage",
+  "description": "An AI-powered PC Builder Agent that generates custom computer configurations based on user requirements and budget.",
+  "requestFramePermissions": []
+}
