@@ -152,14 +152,6 @@ The ReportDashboard includes a real-time chat with the AI agent to:
 - Modify aesthetic preferences
 - Add special requirements
 
-## 🔄 Streaming Support
-
-The backend uses Google ADK with:
-
-- `StreamingMode.SSE` for Server-Sent Events
-- `InMemoryRunner` for agent execution
-- Real-time response streaming
-
 ## 📱 Responsive Design
 
 - Mobile-optimized forms (Home page)
