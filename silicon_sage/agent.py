@@ -30,7 +30,7 @@ if not api_key:
     raise ValueError("GOOGLE_API_KEY not found. Please ensure it is set in your .env file.")
 
 MODEL = Gemini(
-    model="gemini-2.0-flash",
+    model="gemini-2.5-pro",
     api_key=api_key,
     retry_options=retry_config
 )
