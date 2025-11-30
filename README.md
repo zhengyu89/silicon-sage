@@ -1,3 +1,7 @@
+<div align="center">
+<img width="400" alt="Silicon Sage Logo" src="./assets/Silicon-sage.png" />
+</div>
+
 # Silicon Sage - AI-Powered PC Builder
 
 Silicon Sage is an intelligent PC building assistant powered by Google's Gemini AI. It analyzes your budget, use cases, and preferences to generate optimized computer builds with perfect component compatibility.
