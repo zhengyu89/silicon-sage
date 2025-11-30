@@ -2,6 +2,26 @@
 
 Silicon Sage is an intelligent PC building assistant powered by Google's Gemini AI. It analyzes your budget, use cases, and preferences to generate optimized computer builds with perfect component compatibility.
 
+## Problem Statement
+
+Building a custom PC can be overwhelming and error-prone:
+- Thousands of components (CPU, GPU, motherboard, PSU) have strict compatibility requirements (socket types, wattage, size).
+- Users often juggle multiple browser tabs to check specs, prices, and reviews.
+- A single mismatch (e.g., Intel CPU with AMD motherboard) can waste money and time.
+- Budgeting for both performance and aesthetics (RGB, color themes, form factors) requires complex calculations that intimidate beginners.
+
+Without guidance, even enthusiasts can make costly mistakes.
+
+## Solution Statement
+**Silicon Sage** solves this by acting as an AI-powered PC building consultant:
+- **AI-Powered Build Generation:** Uses Gemini 2.5 Pro to generate fully compatible builds based on budget, goals, and style preferences.
+- **Real-time Chat Interface:** Users can iteratively swap parts, adjust budgets, or refine aesthetics while maintaining compatibility.
+- **Performance Estimation:** Calculates total power draw, FPS for gaming, and workstation scores.
+- **Multi-Currency & Vendor Support:** Handles MYR, USD, EUR and provides links to purchase components.
+- **Aesthetic Awareness:** Honors requests like RGB lighting, white builds, or small form factor setups.
+
+The result: optimized, validated builds in under 30 seconds, with reduced risk of mistakes and wasted money.
+
 ## 🎯 Features
 
 - **AI-Powered Build Generation** - Uses Gemini 2.5 Pro to create optimized PC configurations
