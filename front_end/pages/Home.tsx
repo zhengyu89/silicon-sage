@@ -25,6 +25,10 @@ const Home: React.FC = () => {
     "AI/Machine Learning"
   ]);
 
+  const [appId, setAppId] = useState<string>('silicon_sage');
+  const [userId, setUserId] = useState<string>('u_123');
+  const [sessionId, setSessionId] = useState<string>('s_123');
+
   // Form State
   const [formData, setFormData] = useState<SiliconSageBuildRequest>({
     financials: {
@@ -68,13 +72,65 @@ const Home: React.FC = () => {
     }
 
     setIsGenerating(true);
-    
-    // Simulate AI Latency
-    setTimeout(() => {
+
+    const body = {
+      "appName": appId,
+      "userId": userId,
+      "sessionId": sessionId,
+      "newMessage": {
+          "role": "user",
+          "parts": [
+              {
+                  "text": formData.financials.budget_cap + " " + formData.financials.currency + " budget, " +
+                          "Flexibility: " + formData.financials.flexibility + ". " +
+                          "Primary Uses: " + formData.build_requirements.primary_use.join(", ") + ". " +
+                          "Target Resolution: " + formData.build_requirements.target_resolution + ". " +
+                          "Form Factor: " + formData.build_requirements.form_factor_target + ". " +
+                          "Lighting: " + formData.component_preferences.lighting_style + ". " +
+                          "Color Theme: " + formData.component_preferences.color_theme + ". " +
+                          "CPU Platform: " + formData.component_preferences.cpu_preferred_platform + ". " +
+                          (formData.user_prompt ? "Additional Instructions: " + formData.user_prompt : "")
+              }
+          ]
+      }
+    }
+
+    fetch('http://127.0.0.1:8000/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log("Report generated:", data);
+      navigate('/report', { state: { reportData: data } });
+    })
+    .catch(error => {
+      console.error("Error generating report:", error);
+      alert("There was an error generating the report. Please try again.");
       setIsGenerating(false);
-      navigate('/report', { state: { inputData: formData } });
-    }, 2000);
+    });
   };
+
+  useEffect(() => {
+    const url = `http://localhost:8000/apps/${appId}/users/${userId}/sessions/${sessionId}`;
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Fetched session data:", data);
+      })
+      .catch(err => {
+        console.error("Error fetching primary use options:", err);
+      });
+  }, []);
 
   return (
     <div className="bg-slate-50 min-h-full">

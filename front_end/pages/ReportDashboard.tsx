@@ -25,49 +25,91 @@ const ReportDashboard: React.FC = () => {
   const [report, setReport] = useState<SiliconSageBuildReport | null>(null);
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
-    {
-      id: 'welcome',
-      role: 'model',
-      text: "I've analyzed your requirements and generated this build. It's optimized for 1440p performance while keeping the white aesthetic you requested. Feel free to ask me to swap components or adjust the budget!",
-      timestamp: Date.now()
-    }
-  ]);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL;
+   // Helper to extract JSON from Markdown code blocks
+  const extractJsonFromText = (text: string): SiliconSageBuildReport | null => {
+    try {
+      // Match content between ```json and ``` tags
+      const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch && jsonMatch[1]) {
+        return JSON.parse(jsonMatch[1]);
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to parse embedded JSON:", error);
+      return null;
+    }
+  };
+
+  // Helper to clean the text for chat (remove the JSON block)
+  const cleanChatText = (text: string): string => {
+    return text.replace(/```json[\s\S]*?```/g, '').trim();
+  };
+
+  // Fallback for environment where import.meta is not available
+  const API_URL = ''; 
 
   useEffect(() => {
-    const fetchBuildReport = async () => {
+    const processBuildReport = () => {
       try {
-        const inputData = location.state?.inputData;
+        const reportData = location.state?.reportData;
         
-        if (!inputData) {
-          console.error('No input data provided');
+        if (!reportData) {
+          console.error('No report data provided in navigation state');
           return;
         }
 
-        const response = await fetch(`${API_URL}/api/build`, { 
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(inputData)
-        });
+        console.log('Received Report Data:', reportData);
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
+        // 1. Handle Response Text (Chat)
+        let responseText = "";
+        let parsedReport: SiliconSageBuildReport | null = null;
+
+        // Check if reportData is the direct API response object
+        if (typeof reportData === 'object') {
+           responseText = reportData.response_text || "";
+           
+           // Try to find the report structure directly (if API changes to return it clean)
+           if (reportData.report_meta && reportData.components) {
+             parsedReport = reportData as SiliconSageBuildReport;
+           } 
+           // Otherwise, parse it from the response_text
+           else if (responseText) {
+             parsedReport = extractJsonFromText(responseText);
+           }
         }
 
-        const reportData: SiliconSageBuildReport = await response.json();
-        setReport(reportData);
+        // 2. Set Report State (Visualization)
+        if (parsedReport) {
+          setReport({
+            report_meta: parsedReport.report_meta,
+            components: parsedReport.components,
+            performance_estimates: parsedReport.performance_estimates
+          });
+        }
+
+        // 3. Set Chat History
+        if (responseText) {
+          const cleanText = cleanChatText(responseText);
+          setChatHistory([
+            {
+              id: 'init-response',
+              role: 'model',
+              text: cleanText,
+              timestamp: Date.now()
+            }
+          ]);
+        }
+
       } catch (error) {
-        console.error('Failed to fetch build report:', error);
+        console.error('Error processing build report:', error);
       }
     };
 
-    fetchBuildReport();
+    processBuildReport();
     window.scrollTo(0, 0);
   }, [location.state]);
 
@@ -75,7 +117,7 @@ const ReportDashboard: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
 
@@ -89,18 +131,7 @@ const ReportDashboard: React.FC = () => {
     setChatHistory(prev => [...prev, newMsg]);
     setChatInput('');
     setIsTyping(true);
-
-    // Mock AI Response
-    setTimeout(() => {
-      const responseMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'model',
-        text: "I can definitely help with that. Since this is a demo, I can't actually modify the list yet, but in a real version, I would swap that GPU for you and update the total price!",
-        timestamp: Date.now()
-      };
-      setChatHistory(prev => [...prev, responseMsg]);
-      setIsTyping(false);
-    }, 1500);
+    setIsTyping(false);
   };
 
   if (!report) return (
@@ -161,7 +192,7 @@ const ReportDashboard: React.FC = () => {
               </div>
               <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center justify-center text-center">
                 <div className="bg-purple-100 p-2 rounded-full text-purple-600 mb-2"><BarChart3 size={20} /></div>
-                <div className="text-2xl font-bold text-slate-800">{report.performance_estimates.gaming_1440p_fps}</div>
+                <div className="text-2xl font-bold text-slate-800">{report.performance_estimates.gaming_1440p_fps || 'N/A'}</div>
                 <div className="text-xs text-slate-500 uppercase tracking-wide">Gaming FPS</div>
               </div>
             </div>
@@ -193,17 +224,19 @@ const ReportDashboard: React.FC = () => {
                     <h4 className="font-bold text-slate-800 mt-1 mb-2">{comp.model_name}</h4>
                     
                     <div className="grid grid-cols-2 gap-y-1 gap-x-4 text-sm text-slate-600 mb-3">
-                      {Object.entries(comp.specs).slice(0, 4).map(([key, val]) => (
+                      {comp.specs && Object.entries(comp.specs).slice(0, 4).map(([key, val]) => (
                         <div key={key} className="flex justify-between border-b border-slate-100 pb-1">
-                          <span className="text-slate-400">{key}</span>
+                          <span className="text-slate-400 capitalize">{key.replace(/_/g, ' ')}</span>
                           <span className="font-medium text-slate-700">{String(val)}</span>
                         </div>
                       ))}
                     </div>
 
-                    <a href={comp.vendor_url} target="_blank" rel="noreferrer" className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
-                      Buy Now <ChevronRight size={14} />
-                    </a>
+                    {comp.vendor_url && (
+                      <a href={comp.vendor_url} target="_blank" rel="noreferrer" className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                        Buy Now <ChevronRight size={14} />
+                      </a>
+                    )}
                   </div>
                 </div>
               ))}
@@ -222,14 +255,19 @@ const ReportDashboard: React.FC = () => {
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <h3 className="font-bold text-slate-800">Sage Agent</h3>
               </div>
-              <button className="text-xs text-slate-400 hover:text-indigo-600">Reset Chat</button>
+              <button 
+                className="text-xs text-slate-400 hover:text-indigo-600"
+                onClick={() => setChatHistory([])}
+              >
+                Reset Chat
+              </button>
             </div>
 
             {/* Chat History */}
             <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50/50">
               {chatHistory.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] rounded-2xl p-3 text-sm shadow-sm ${
+                  <div className={`max-w-[85%] rounded-2xl p-3 text-sm shadow-sm whitespace-pre-wrap ${
                     msg.role === 'user' 
                       ? 'bg-indigo-600 text-white rounded-br-none' 
                       : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'
